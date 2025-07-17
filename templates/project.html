@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Project Details{% endblock %}
+{% block content %}
+<style>
+    .project-details, .form-section, .materials-list, .adjustment-section { border: 1px solid #ccc; padding: 1.5em; margin-bottom: 2em; border-radius: 5px; background: white;}
+    table { width: 100%; border-collapse: collapse; margin-top: 1em; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: middle; }
+    th { background-color: #f2f2f2; }
+    .total-row, .final-total-row { font-weight: bold; background-color: #f9f9f9; }
+    .final-total-row { font-size: 1.2em; border-top: 2px solid #333; }
+    .btn { padding: 5px 10px; text-decoration: none; border-radius: 4px; color: white; border: none; cursor: pointer; display: inline-block; margin-right: 5px; }
+    .edit-btn { background-color: #ffc107; color: black; }
+    .delete-btn { background-color: #dc3545; color: white; }
+    .print-btn { background-color: #17a2b8; }
+    .save-btn { background-color: #28a745; }
+</style>
+
+<h1>Project: {{ project.project_name }}</h1>
+<a href="{{ url_for('generate_pdf', project_id=project.id) }}" class="btn print-btn" style="margin-bottom: 2em;" target="_blank">Generate PDF</a>
+
+<div class="project-details">
+    <p><strong>Client:</strong> {{ project.client_name }}</p>
+    <p><strong>Address:</strong><br>{{ project.client_address|replace('\n', '<br>')|safe if project.client_address else 'No address entered.' }}</p>
+</div>
+
+<div class="form-section">
+    <h2>Add Material to Project</h2>
+    <form action="{{ url_for('add_material_to_project', project_id=project.id) }}" method="post">
+        <label for="materialSearch">Search Materials:</label><br>
+        <input type="text" id="materialSearch" placeholder="Type to filter list..." style="margin-bottom: 5px;"><br>
+        <label for="materialSelect">Select Material:</label><br>
+        <select id="materialSelect" name="material_id" required>
+            <option value="">-- Please select a material --</option>
+            {% for material in all_materials %}<option value="{{ material.id }}">{{ material.material_name }} (${{ "%.2f"|format(material.price) }})</option>{% endfor %}
+        </select><br>
+        <label for="quantity">Quantity:</label><br>
+        <input type="number" id="quantity" name="quantity" value="1" required><br>
+        <label for="markup_percentage">Markup (%):</label><br>
+        <input type="number" id="markup_percentage" name="markup_percentage" value="0" step="1" required><br>
+        <label><input type="checkbox" name="gst_toggle"> Apply GST (15%)</label><br><br>
+        <input type="submit" value="Add to Quote">
+    </form>
+</div>
+
+<div class="materials-list">
+    <h2>Quote Details</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Material</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Markup</th>
+                <th>GST Applied?</th>
+                <th>Line Total</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in project.materials %}
+            <tr>
+                <td>{{ item.material.material_name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>${{ "%.2f"|format(item.material.price) }}</td>
+                <td>{{ item.markup_percentage }}%</td>
+                <td>{% if item.gst_applied %}Yes{% else %}No{% endif %}</td>
+                <td>
+                    {% set base_price = item.quantity * item.material.price %}
+                    {% set marked_up_price = base_price * (1 + item.markup_percentage / 100) %}
+                    {% set line_total = marked_up_price %}
+                    {% if item.gst_applied %}{% set line_total = marked_up_price * 1.15 %}{% endif %}
+                    ${{ "%.2f"|format(line_total) }}
+                </td>
+                <td>
+                    <a href="{{ url_for('edit_project_material', item_id=item.id) }}" class="btn edit-btn">Edit</a>
+                    <form action="{{ url_for('delete_project_material', item_id=item.id) }}" method="post" style="display:inline;">
+                        <input type="submit" value="Delete" class="btn delete-btn" onclick="return confirm('Are you sure you want to delete this item?');">
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7">No materials added to this quote yet.</td></tr>
+            {% endfor %}
+            <tr class="total-row">
+                <td colspan="6" style="text-align:right;">Calculated Total:</td>
+                <td>${{ "%.2f"|format(calculated_total) }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="adjustment-section">
+    <h2>Final Price Adjustment</h2>
+    <form action="{{ url_for('adjust_price', project_id=project.id) }}" method="post">
+        <label for="price_adjustment">Adjustment Amount (e.g., -2.54 to round down, or 5.00 to add):</label>
+        <input type="number" step="0.01" name="price_adjustment" value="{{ project.price_adjustment or 0.00 }}">
+        <input type="submit" value="Save Adjustment" class="btn save-btn">
+    </form>
+    <hr style="margin-top: 20px;">
+    <h3 style="text-align: right;">Final Grand Total: ${{ "%.2f"|format(final_total) }}</h3>
+</div>
+
+<script>
+    document.getElementById('materialSearch').addEventListener('keyup', function() {
+        let filter = this.value.toLowerCase();
+        let select = document.getElementById('materialSelect');
+        let options = select.getElementsByTagName('option');
+        for (let i = 0; i < options.length; i++) {
+            let option = options[i];
+            let optionText = option.textContent || option.innerText;
+            if (option.value === "") { option.style.display = ""; continue; }
+            if (optionText.toLowerCase().indexOf(filter) > -1) { option.style.display = ""; } else { option.style.display = "none"; }
+        }
+    });
+</script>
+{% endblock %}

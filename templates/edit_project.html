@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Edit Project{% endblock %}
+{% block content %}
+<style>
+    .form-section { background-color: #fff; padding: 1.5em; border-radius: 5px; border: 1px solid #ccc; }
+    input[type="text"], textarea { width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; }
+    input[type="submit"] { background-color: #28a745; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; }
+</style>
+<h1>Edit Project</h1>
+<div class="form-section">
+    <form action="{{ url_for('update_project', project_id=project.id) }}" method="post">
+        <!-- NEW: Added Quote Number field -->
+        <label for="quote_number">Quote #:</label><br>
+        <input type="text" id="quote_number" name="quote_number" value="{{ project.quote_number }}" required><br>
+
+        <label for="project_name">Project Name:</label><br>
+        <input type="text" id="project_name" name="project_name" value="{{ project.project_name }}" required><br>
+        <label for="client_name">Client Name:</label><br>
+        <input type="text" id="client_name" name="client_name" value="{{ project.client_name or '' }}"><br>
+        <label for="client_address">Client Address:</label><br>
+        <textarea id="client_address" name="client_address" rows="2">{{ project.client_address or '' }}</textarea><br>
+        <label for="proposed_start_date">Proposed Start Date:</label><br>
+        <input type="text" id="proposed_start_date" name="proposed_start_date" value="{{ project.proposed_start_date or 'Customer to advise' }}"><br>
+        <label for="job_duration">Expected Job Duration:</label><br>
+        <input type="text" id="job_duration" name="job_duration" value="{{ project.job_duration or '3 to 4 days' }}"><br>
+        <label for="project_description">Description:</label><br>
+        <textarea id="project_description" name="project_description" rows="3">{{ project.project_description or '' }}</textarea><br>
+        <input type="submit" value="Save Changes">
+    </form>
+</div>
+{% endblock %}

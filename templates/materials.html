@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Materials Library{% endblock %}
+{% block content %}
+<style>
+    .form-section { background-color: #fff; padding: 1.5em; border-radius: 5px; margin-bottom: 2em; border: 1px solid #ccc; }
+    table { width: 100%; border-collapse: collapse; background-color: white; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: middle; }
+    th { background-color: #f2f2f2; }
+    input[type="text"], input[type="number"] { width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; }
+    input[type="submit"] { background-color: #007BFF; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; }
+    .edit-btn { background-color: #ffc107; color: black; padding: 5px 10px; text-decoration: none; border-radius: 4px; }
+</style>
+<h1>Materials Library</h1>
+<div class="form-section">
+    <h2>Add a New Material</h2>
+    <form action="/add_material" method="post">
+        <label for="material_name">Material Name:</label><br>
+        <input type="text" id="material_name" name="material_name" required><br>
+        <label for="price">Price (e.g., 12.50):</label><br>
+        <input type="number" step="0.01" id="price" name="price" required><br>
+        <label for="product_url">Product URL (Optional):</label><br>
+        <input type="text" id="product_url" name="product_url"><br>
+        <input type="submit" value="Add Material">
+    </form>
+</div>
+<h2>Existing Materials</h2>
+<table>
+    <tr>
+        <th>Material Name</th>
+        <th>Price</th>
+        <th>Link</th>
+        <th>Action</th>
+    </tr>
+    {% for material in materials %}
+    <tr>
+        <td>{{ material.material_name }}</td>
+        <td>${{ "%.2f"|format(material.price) }}</td>
+        <td>
+            {% if material.product_url %}
+                <a href="{{ material.product_url }}" target="_blank">Check Price</a>
+            {% else %}
+                No Link
+            {% endif %}
+        </td>
+        <td>
+            <a href="{{ url_for('edit_material', material_id=material.id) }}" class="edit-btn">Edit</a>
+        </td>
+    </tr>
+    {% else %}
+    <tr>
+        <td colspan="4">No materials yet. Add one above!</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Quoting App{% endblock %}</title>
+    <style>
+        body { font-family: sans-serif; margin: 0; background-color: #f4f4f4; }
+        .content-container { padding: 2em; max-width: 1000px; margin: auto; }
+        .navbar { background-color: #333; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar-brand { color: white; text-decoration: none; font-size: 1.5em; font-weight: bold; }
+        .menu-toggle { cursor: pointer; }
+        .bar { display: block; width: 25px; height: 3px; margin: 5px auto; background-color: white; transition: 0.4s; }
+        .dropdown-menu { display: none; position: absolute; right: 20px; top: 50px; background-color: white; min-width: 200px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); z-index: 1; border-radius: 5px; }
+        .dropdown-menu a { color: black; padding: 12px 16px; text-decoration: none; display: block; }
+        .dropdown-menu a:hover { background-color: #f1f1f1; }
+        .dropdown-menu.show { display: block; }
+        .flash-messages { list-style: none; padding: 0; margin-bottom: 1em; }
+        .flash-messages li { padding: 15px; border-radius: 5px; margin-bottom: 10px; }
+        .flash-messages .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .flash-messages .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="/" class="navbar-brand">Quoting App</a>
+        <div class="menu-toggle" id="menuToggle">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+        </div>
+    </div>
+    <div class="dropdown-menu" id="dropdownMenu">
+        <a href="/">Projects</a>
+        <a href="/materials">Manage Materials</a>
+        <a href="/settings">Company Settings</a>
+    </div>
+    <div class="content-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flash-messages">
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </div>
+<script>
+    document.getElementById('menuToggle').addEventListener('click', function() { document.getElementById('dropdownMenu').classList.toggle('show'); });
+    window.onclick = function(event) {
+        if (!event.target.matches('.menu-toggle') && !event.target.matches('.bar')) {
+            var dropdowns = document.getElementsByClassName("dropdown-menu");
+            for (var i = 0; i < dropdowns.length; i++) {
+                if (dropdowns[i].classList.contains('show')) { dropdowns[i].classList.remove('show'); }
+            }
+        }
+    }
+</script>
+</body>
+</html>
