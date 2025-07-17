@@ -1,10 +1,7 @@
 services:
   - type: web
     name: quoting-app-server
-    env: python
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn --chdir /var/task app:app"
+    env: docker
     plan: free
-    envVars:
-      - key: PYTHON_VERSION
-        value: 3.10.0
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
